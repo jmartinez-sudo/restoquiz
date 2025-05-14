@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% load permissions %}
+
+{% block title %}Encuestas{% endblock %}
+
+{% block content %}
+  <h1>Encuestas</h1>
+
+  {% if user|has_group:'Casa Matriz' or user.is_superuser %}
+    <a href="{% url 'crear_encuesta' %}" class="btn btn-primary mb-3">
+      Nueva Encuesta
+    </a>
+  {% endif %}
+
+  <ul class="list-group mb-4">
+    {% for e in encuestas %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ e.nombre }}
+        <div>
+          {% if user|has_group:'Casa Matriz' or user.is_superuser %}
+            <a href="{% url 'editar_encuesta' e.id %}" class="btn btn-sm btn-warning me-2">
+              Editar
+            </a>
+            <a href="{% url 'eliminar_encuesta' e.id %}" class="btn btn-sm btn-danger me-2">
+              Eliminar
+            </a>
+          {% endif %}
+          <a href="{% url 'asignar_encuesta' e.id %}" class="btn btn-sm btn-secondary">
+            Asignar
+          </a>
+        </div>
+      </li>
+    {% empty %}
+      <li class="list-group-item">No hay encuestas.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

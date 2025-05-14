@@ -4,14 +4,16 @@
 <h1>Quiz</h1>
 <form method="post">{% csrf_token %}
   {% for p in preguntas %}
-    <div class="mb-3">
-      <label class="form-label">{{ p.texto }}</label>
-      {% for r in p.respuestas.all %}
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="pregunta_{{ p.id }}" value="{{ r.id }}">
-          <label class="form-check-label">{{ r.texto }}</label>
-        </div>
-      {% endfor %}
+    <div class="card mb-3">
+      <div class="card-header">{{ p.texto }}</div>
+      <div class="card-body">
+        {% for r in p.respuestas.all %}
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="pregunta_{{ p.id }}" id="r{{ r.id }}" value="{{ r.id }}">
+            <label class="form-check-label" for="r{{ r.id }}">{{ r.texto }}</label>
+          </div>
+        {% endfor %}
+      </div>
     </div>
   {% endfor %}
   <button class="btn btn-success">Enviar</button>

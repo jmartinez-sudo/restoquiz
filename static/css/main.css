@@ -1,0 +1,147 @@
+/* static/css/main.css */
+
+/* -------------------------------- */
+/* Variables de color              */
+/* -------------------------------- */
+:root {
+  --color-bg-start: #0f2609;
+  --color-bg-end:   #56885b;
+  --color-primary:  #1f9f4d;
+  --color-primary-hover: #146c45;
+  --color-text:     #f4f4f4;
+}
+
+/* -------------------------------- */
+/* Global reset y tipografía       */
+/* -------------------------------- */
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Montserrat', sans-serif;
+  background: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end));
+  color: var(--color-text);
+}
+
+/* -------------------------------- */
+/* Sidebar fijo                   */
+/* -------------------------------- */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: linear-gradient(180deg, var(--color-bg-start), var(--color-bg-end));
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+/* -------------------------------- */
+/* Logo en sidebar                  */
+/* -------------------------------- */
+.logo {
+  width: 160px;
+  filter: brightness(0) invert(1);
+}
+
+/* -------------------------------- */
+/* Contenido principal              */
+/* -------------------------------- */
+main.content {
+  margin-left: 240px;    /* deja espacio al sidebar */
+  padding: 2rem;         /* separa del borde */
+  min-height: 100vh;
+}
+
+/* -------------------------------- */
+/* Enlaces generales                */
+/* -------------------------------- */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+/* -------------------------------- */
+/* Navegación en sidebar            */
+/* -------------------------------- */
+.sidebar .nav-link {
+  color: var(--color-text);
+  font-weight: 500;
+  padding: .5rem 1rem;
+  border-radius: .5rem;
+  transition: background .2s;
+}
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+  background-color: var(--color-primary);
+  color: var(--color-bg-end);
+}
+
+/* -------------------------------- */
+/* Botones                          */
+/* -------------------------------- */
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  font-weight: 500;
+  border-radius: .5rem;
+  transition: background .2s, border .2s;
+}
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 2px solid var(--color-text);
+  color: var(--color-text);
+}
+.btn-secondary:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+/* -------------------------------- */
+/* Tarjetas y listas                */
+/* -------------------------------- */
+.card, .list-group-item {
+  background-color: rgba(0,0,0,0.2);
+  border: none;
+  border-radius: .5rem;
+  color: var(--color-text);
+}
+
+/* -------------------------------- */
+/* Formularios                      */
+/* -------------------------------- */
+.form-control, select, textarea {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: .25rem;
+  color: var(--color-text);
+}
+.form-control:focus, select:focus, textarea:focus {
+  background: rgba(255,255,255,0.2);
+  border-color: var(--color-primary);
+  box-shadow: none;
+}
+
+/* -------------------------------- */
+/* Encabezados y texto              */
+/* -------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--color-text);
+}
+p, label {
+  color: var(--color-text);
+}

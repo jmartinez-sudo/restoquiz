@@ -1,0 +1,14 @@
+{% extends 'core/base.html' %}
+{% load permissions %}
+
+{% block title %}Eliminar Encuesta{% endblock %}
+
+{% block content %}
+  <h1>Eliminar Encuesta</h1>
+  <p>¿Estás seguro que deseas eliminar la encuesta "<strong>{{ encuesta.nombre }}</strong>"?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+    <a href="{% url 'lista_encuestas' %}" class="btn btn-secondary ms-2">Cancelar</a>
+  </form>
+{% endblock %}

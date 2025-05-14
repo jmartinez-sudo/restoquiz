@@ -1,0 +1,14 @@
+{% extends 'core/base.html' %}
+{% block title %}Mis Encuestas{% endblock %}
+{% block content %}
+<h1>Mis Encuestas Asignadas</h1>
+<ul class="list-group">
+  {% for e in encuestas %}
+    <li class="list-group-item">
+      <a href="{% url 'tomar_quiz' %}?encuesta={{ e.id }}">{{ e.nombre }}</a>
+    </li>
+  {% empty %}
+    <li class="list-group-item">No tienes encuestas asignadas.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

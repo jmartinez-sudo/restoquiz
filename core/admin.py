@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Categoria, Pregunta, Respuesta, QuizAttempt, AttemptAnswer
+from .models import Categoria, Pregunta, Respuesta, QuizAttempt, AttemptAnswer, Encuesta
 
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
@@ -21,3 +21,7 @@ class QuizAttemptAdmin(admin.ModelAdmin):
 @admin.register(AttemptAnswer)
 class AttemptAnswerAdmin(admin.ModelAdmin):
     list_display = ('intento', 'pregunta', 'respuesta')
+
+@admin.register(Encuesta)
+class EncuestaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'creador', 'fecha_creacion')
