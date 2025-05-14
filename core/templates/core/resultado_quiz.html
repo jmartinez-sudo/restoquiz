@@ -1,0 +1,14 @@
+{% extends 'core/base.html' %}
+{% block title %}Resultado Quiz{% endblock %}
+{% block content %}
+<h1>Resultado</h1>
+<p><strong>Puntaje Total:</strong> {{ intento.puntaje_total }}</p>
+<h3>Por Categoría:</h3>
+<ul class="list-group">
+  {% for cat, pts in breakdown %}
+    <li class="list-group-item d-flex justify-content-between">
+      {{ cat }} <span class="badge bg-primary">{{ pts }}</span>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

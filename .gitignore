@@ -1,0 +1,18 @@
+# Archivos Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtualenv
+venv/
+
+# SQLite local
+db.sqlite3
+
+# Archivos de subida y collectstatic
+/media/
+/staticfiles/
+
+# IDEs
+.vscode/
+.idea/

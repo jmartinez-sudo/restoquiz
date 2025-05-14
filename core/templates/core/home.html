@@ -1,0 +1,14 @@
+{% extends 'core/base.html' %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+  <h1 class="mb-4">Bienvenido a Restoquiz</h1>
+  <p>Selecciona una opción:</p>
+  <div class="list-group">
+    <a href="{% url 'lista_categorias' %}" class="list-group-item list-group-item-action">
+      Ver Categorías
+    </a>
+    <a href="{% url 'tomar_quiz' %}" class="list-group-item list-group-item-action">
+      Tomar Quiz
+    </a>
+  </div>
+{% endblock %}
