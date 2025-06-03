@@ -1,4 +1,4 @@
-{% load static permissions %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -17,48 +17,58 @@
 <body>
   <div class="d-flex">
 
-    {# Sidebar fijo #}
-    <nav class="sidebar d-flex flex-column p-3">
+    {# ============================ #}
+    {#         SIDEBAR FIJO         #}
+    {# ============================ #}
+    <nav class="sidebar d-flex flex-column p-3 bg-dark text-white" style="min-width: 250px; height: 100vh;">
       <div class="sidebar-header text-center mb-4">
         <a href="{% url 'home' %}" class="d-inline-block">
-          <img src="{% static 'images/Logo_Restoquiz.png' %}" alt="Restoquiz" class="logo">
+          <img src="{% static 'images/Logo_Restoquiz.png' %}" alt="Restoquiz" class="logo img-fluid">
         </a>
       </div>
 
       <ul class="nav flex-column mb-auto">
-        <li class="nav-item">
-          <a href="{% url 'lista_encuestas' %}" class="nav-link">Encuestas</a>
+        {# Enlace al Home #}
+        <li class="nav-item mb-2">
+          <a href="{% url 'home' %}" class="nav-link text-white">
+            <i class="bi bi-house-door-fill"></i> Inicio
+          </a>
         </li>
-        {% if user|has_group:'Casa Matriz' or user.is_superuser %}
-        <li class="nav-item">
-          <a href="{% url 'crear_encuesta' %}" class="nav-link">Nueva Encuesta</a>
+
+        {# Enlace al Informe de Visita #}
+        <li class="nav-item mb-2">
+          <a href="{% url 'informe_visita' %}" class="nav-link text-white">
+            <i class="bi bi-card-checklist"></i> Informe de Visita
+          </a>
         </li>
-        {% endif %}
-        <li class="nav-item">
-          <a href="{% url 'mis_asignaciones' %}" class="nav-link">Mis Asignaciones</a>
-        </li>
+
+        {# Si en el futuro necesitas añadir nuevas rutas, agrégalas aquí #}
       </ul>
 
-      {# Formulario de logout con POST #}
+      <hr class="border-secondary">
+
+      {# Formulario de logout #}
       <div class="mt-auto text-center small">
         Conectado como <strong>{{ user.username }}</strong><br>
         <form method="post" action="{% url 'logout' %}">
           {% csrf_token %}
           <button type="submit" class="btn btn-link p-0 text-white-50">
-            Salir
+            <i class="bi bi-box-arrow-right"></i> Salir
           </button>
         </form>
       </div>
     </nav>
 
-    {# Contenido principal #}
-    <main class="content">
+    {# ============================ #}
+    {#      CONTENIDO PRINCIPAL     #}
+    {# ============================ #}
+    <main class="content flex-grow-1 p-4">
       {% block content %}{% endblock %}
     </main>
 
   </div>
 
-  {# Bootstrap JS #}
-  <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+  {# Bootstrap JS para iconos y componentes dinamicos #}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

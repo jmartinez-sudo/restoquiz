@@ -1,0 +1,10 @@
+{% extends "core/base.html" %}
+{% block title %}¡Gracias!{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+  <h3>¡Gracias por enviar el Informe de Visita!</h3>
+  <p>Hemos recibido tu formulario correctamente.</p>
+  <a href="{% url 'home' %}" class="btn btn-primary">Volver al Inicio</a>
+</div>
+{% endblock %}

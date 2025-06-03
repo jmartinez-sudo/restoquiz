@@ -1,14 +1,9 @@
-{% extends 'core/base.html' %}
-{% load static %}
-
-{% block title %}Bienvenido – Restoquiz{% endblock %}
+{% extends "core/base.html" %}
+{% block title %}Inicio{% endblock %}
 
 {% block content %}
-  <div class="container text-center mt-5">
-    <img src="{% static 'images/Logo_Restoquiz.png' %}"
-         alt="Restoquiz" class="mb-4" height="120">
-    <h1 class="fw-bold">Bienvenido a Restoquiz</h1>
-    <p class="lead">Aplicación de Encuestas y Cuestionarios Unifood.</p>
-    <p class="text-muted">By TI_Unifood JM 2025</p>
+  <div class="container">
+    <h1 class="mt-4">Bienvenido a Restoquiz</h1>
+    <p>Usa el menú lateral para navegar. Por ejemplo, ve a “Informe de Visita” para comenzar la inspección.</p>
   </div>
 {% endblock %}

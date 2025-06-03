@@ -1,27 +1,27 @@
+# core/admin.py
+
 from django.contrib import admin
-from .models import Categoria, Pregunta, Respuesta, QuizAttempt, AttemptAnswer, Encuesta
+from .models import Categoria, Pregunta, Respuesta
 
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'peso')
+    search_fields = ('nombre',)
+
 
 @admin.register(Pregunta)
 class PreguntaAdmin(admin.ModelAdmin):
-    list_display = ('texto', 'categoria')
+    list_display = ('orden', 'texto', 'categoria')
+    list_filter = ('categoria',)
+    search_fields = ('texto', 'orden')
+    raw_id_fields = ('categoria',)
+    readonly_fields = ('orden',)  # O quítalo si quieres editar el orden desde el admin
+
 
 @admin.register(Respuesta)
 class RespuestaAdmin(admin.ModelAdmin):
-    list_display = ('texto', 'pregunta', 'es_correcta', 'puntaje')
-    list_filter  = ('pregunta__categoria',)
-
-@admin.register(QuizAttempt)
-class QuizAttemptAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'fecha', 'puntaje_total')
-
-@admin.register(AttemptAnswer)
-class AttemptAnswerAdmin(admin.ModelAdmin):
-    list_display = ('intento', 'pregunta', 'respuesta')
-
-@admin.register(Encuesta)
-class EncuestaAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'creador', 'fecha_creacion')
+    list_display = ('pregunta', 'seleccion', 'fecha_respuesta')
+    list_filter = ('seleccion', 'pregunta__categoria', 'fecha_respuesta')
+    search_fields = ('pregunta__texto',)
+    raw_id_fields = ('pregunta',)
+    readonly_fields = ('fecha_respuesta',)

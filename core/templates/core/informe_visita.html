@@ -1,0 +1,264 @@
+{# core/templates/core/informe_visita.html #}
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Informe de Visita{% endblock %}
+
+{% block content %}
+<style>
+  /* ================================
+     Fuentes y Colores Generales
+     ================================ */
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f8f9fa;
+  }
+
+  .table-cabecera td, .table-cabecera th {
+    border: 1px solid #dee2e6;
+    vertical-align: middle;
+  }
+
+  .table-cabecera th {
+    background-color: #6f42c1; /* Morado oscuro */
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .table-cabecera td input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background-color: transparent;
+  }
+
+  .card-categoria {
+    margin-bottom: 1.5rem;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  .card-header-categoria {
+    background-color: #6f42c1;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .table-preguntas {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .table-preguntas th,
+  .table-preguntas td {
+    border: 1px solid #dee2e6;
+    padding: 0.5rem;
+    vertical-align: middle;
+    font-size: 0.9rem;
+  }
+
+  .table-preguntas th {
+    background-color: #6f42c1;
+    color: #ffffff;
+    text-align: center;
+    font-weight: 500;
+  }
+
+  .table-preguntas td.ptje-cell {
+    background-color: #e9ecef;
+    text-align: center;
+    font-weight: 500;
+    width: 60px;
+  }
+
+  .table-preguntas td.radio-cell {
+    text-align: center;
+    width: 60px;
+  }
+
+  .table-preguntas td.observaciones-cell {
+    width: 40%;
+  }
+
+  .table-preguntas td.observaciones-cell textarea {
+    width: 100%;
+    resize: vertical;
+    font-size: 0.9rem;
+  }
+
+  .table-preguntas td.evidencia-cell input[type="file"] {
+    font-size: 0.85rem;
+  }
+
+  .promedio-box {
+    background-color: #6c757d;
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .promedio-valor {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+</style>
+
+<div class="container-fluid mt-4">
+
+  {# ================================
+     CABECERA (RAZÓN SOCIAL, ETC.)
+     ================================ #}
+  <div class="row mb-4">
+    {# Parte izquierda: tabla con campos generales #}
+    <div class="col-md-8">
+      <table class="table table-sm table-cabecera">
+        <tbody>
+          <tr>
+            <th>RAZÓN SOCIAL</th>
+            <td><input type="text" name="razon_social" placeholder="_________________"></td>
+            <th>FECHA VISITA</th>
+            <td><input type="date" name="fecha_visita"></td>
+          </tr>
+          <tr>
+            <th>LOCAL</th>
+            <td><input type="text" name="local" placeholder="_________________"></td>
+            <th>PROFESIONAL SSO</th>
+            <td><input type="text" name="profesional_sso" placeholder="_________________"></td>
+          </tr>
+          <tr>
+            <th>DIRECCIÓN</th>
+            <td colspan="3"><input type="text" name="direccion" placeholder="______________________________________________"></td>
+          </tr>
+          <tr>
+            <th>SUPERVISOR</th>
+            <td><input type="text" name="supervisor" placeholder="_________________"></td>
+            <th>GERENTE LOCAL</th>
+            <td><input type="text" name="gerente_local" placeholder="_________________"></td>
+          </tr>
+          <tr>
+            <th>QUIÉN RECIBE</th>
+            <td><input type="text" name="quien_recibe" placeholder="_________________"></td>
+            <th></th>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    {# Parte derecha: recuadro “Promedio Final” #}
+    <div class="col-md-4 d-flex justify-content-center align-items-center">
+      <div class="card w-75 text-center">
+        <div class="card-header promedio-box">
+          Promedio Final
+        </div>
+        <div class="card-body">
+          <span class="promedio-valor" id="promedio-valor">0%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ================================
+     FORMULARIO PRINCIPAL: CATEGORÍAS Y PREGUNTAS
+     ================================ #}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% for categoria in categorias %}
+      <div class="card card-categoria">
+        <div class="card-header card-header-categoria">
+          {{ categoria.orden }}.- {{ categoria.nombre }}
+        </div>
+        <div class="card-body px-0">
+          <table class="table-preguntas">
+            <thead>
+              <tr>
+                <th style="width:8%;">ITEM</th>
+                <th style="width:42%;">RIESGOS EVALUADOS</th>
+                <th style="width:10%;">Ptje.</th>
+                <th style="width:6%;">SI</th>
+                <th style="width:6%;">NO</th>
+                <th style="width:6%;">NA</th>
+                <th style="width:22%;">OBSERVACIONES / EVIDENCIA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for preg in categoria.preguntas.all %}
+                <tr>
+                  {# Columna “ITEM” con el número p. ej. 1.1, 1.2, … #}
+                  <td class="text-center"><strong>{{ preg.orden }}</strong></td>
+
+                  {# Columna “RIESGOS EVALUADOS” con el texto de la pregunta #}
+                  <td>{{ preg.texto }}</td>
+
+                  {# Celda “Ptje.” inicializada en 0 #}
+                  <td class="ptje-cell" id="ptje-{{ preg.id }}">0</td>
+
+                  {# Radios para SI / NO / NA #}
+                  <td class="radio-cell">
+                    <input type="radio" name="seleccion_{{ preg.id }}" value="SI">
+                  </td>
+                  <td class="radio-cell">
+                    <input type="radio" name="seleccion_{{ preg.id }}" value="NO">
+                  </td>
+                  <td class="radio-cell">
+                    <input type="radio" name="seleccion_{{ preg.id }}" value="NA" checked>
+                  </td>
+
+                  {# Observaciones y campo para subir evidencia #}
+                  <td class="observaciones-cell">
+                    <textarea
+                      name="comentario_{{ preg.id }}"
+                      rows="2"
+                      placeholder="Observaciones…"
+                      class="form-control form-control-sm"
+                    ></textarea>
+                    <div class="mt-1 evidencia-cell">
+                      <label for="evidencia_{{ preg.id }}" class="form-label mb-0" style="font-size:0.85rem;">
+                        Subir Foto/Video:
+                      </label>
+                      <input
+                        type="file"
+                        name="evidencia_{{ preg.id }}"
+                        id="evidencia_{{ preg.id }}"
+                        accept="image/*,video/*"
+                        class="form-control form-control-sm"
+                      >
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+
+              {# Fila “TOTAL” de cada categoría (suma de puntajes) -- aquí se puede calcular por JS si se desea #}
+              <tr>
+                <td colspan="2" class="text-end"><strong>TOTAL</strong></td>
+                <td class="ptje-cell" id="total-cat-{{ categoria.id }}">0</td>
+                <td colspan="4"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endfor %}
+
+    {# ================================
+       BOTÓN DE ENVÍO
+       ================================ #}
+    <div class="d-flex justify-content-end mb-5">
+      <button type="submit" class="btn btn-success btn-lg px-4">Enviar Informe</button>
+    </div>
+  </form>
+</div>
+
+{# ================================
+   JS OPCIONAL PARA CALCULAR PUNTAJES
+   ================================ 
+   Si deseas que los “Ptje.” y “Total” se actualicen en tiempo real, 
+   podrías añadir un script aquí que escuche los cambios en cada 
+   radio y recalcule porcentajes. Por simplicidad, lo omitimos, 
+   pues por ahora basta con enviar el formulario. #}
+
+{% endblock %}

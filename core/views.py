@@ -1,99 +1,47 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-from .decorators import group_required
-from .models import (
-    Categoria, Pregunta, Respuesta,
-    QuizAttempt, AttemptAnswer, Encuesta
-)
-from .forms import (
-    CategoriaForm, PreguntaForm, RespuestaForm,
-    EncuestaForm, AsignarEncuestaForm
-)
+# core/views.py
 
-@login_required
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+from .models import Categoria, Pregunta, Respuesta
+
 def home(request):
+    # Renderiza la plantilla 'core/home.html'
     return render(request, 'core/home.html')
 
-@login_required
-def lista_encuestas(request):
-    encuestas = Encuesta.objects.order_by('-fecha_creacion')
-    return render(request, 'core/encuesta_list.html', {'encuestas': encuestas})
 
 @login_required
-@group_required('Casa Matriz')
-def crear_encuesta(request):
-    if request.method == 'POST':
-        form = EncuestaForm(request.POST)
-        if form.is_valid():
-            encuesta = form.save(commit=False)
-            encuesta.creador = request.user
-            encuesta.save()
-            form.save_m2m()
-            return redirect('lista_encuestas')
-    else:
-        form = EncuestaForm()
-    return render(request, 'core/crear_encuesta.html', {'form': form})
+def realizar_informe_visita(request):
+    """
+    Muestra todas las Categorías y Preguntas de la encuesta “Informe de Visita”.
+    Permite subir evidencia y marcar SI/NO/NA. Al hacer POST, crea una Respuesta por cada pregunta respondida.
+    """
+    categorias = Categoria.objects.prefetch_related('preguntas').order_by('nombre').all()
 
-@login_required
-@group_required('Casa Matriz')
-def editar_encuesta(request, encuesta_id):
-    encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
-    if not (request.user.is_superuser or request.user.groups.filter(name='Casa Matriz').exists()):
-        return HttpResponseForbidden()
     if request.method == 'POST':
-        form = EncuestaForm(request.POST, instance=encuesta)
-        if form.is_valid():
-            form.save()
-            return redirect('lista_encuestas')
-    else:
-        form = EncuestaForm(instance=encuesta)
-    return render(request, 'core/editar_encuesta.html', {
-        'form': form,
-        'encuesta': encuesta
+        for cat in categorias:
+            for preg in cat.preguntas.all():
+                sel = request.POST.get(f"user_seleccion_{preg.id}")
+                comentario = request.POST.get(f"user_comentario_{preg.id}", '').strip()
+                evid_file = request.FILES.get(f"user_evidencia_{preg.id}")
+
+                if sel or comentario or evid_file:
+                    Respuesta.objects.create(
+                        pregunta=preg,
+                        seleccion=sel if sel else 'NA',
+                        comentario=comentario if comentario else '',
+                        evidencia=evid_file if evid_file else None
+                    )
+
+        return redirect(reverse('informe_gracias'))
+
+    return render(request, 'core/informe_visita.html', {
+        'categorias': categorias
     })
 
-@login_required
-@group_required('Casa Matriz')
-def asignar_encuesta(request, encuesta_id):
-    encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
-    if request.method == 'POST':
-        form = AsignarEncuestaForm(request.POST, instance=encuesta)
-        if form.is_valid():
-            form.save()
-            return redirect('lista_encuestas')
-    else:
-        form = AsignarEncuestaForm(instance=encuesta)
-    return render(request, 'core/asignar_encuesta.html', {
-        'form': form,
-        'encuesta': encuesta
-    })
 
-@login_required
-@group_required('Casa Matriz')
-def eliminar_encuesta(request, encuesta_id):
-    encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
-    # Solo superuser o Casa Matriz pueden eliminar
-    if not (request.user.is_superuser or request.user.groups.filter(name='Casa Matriz').exists()):
-        return HttpResponseForbidden()
-    if request.method == 'POST':
-        encuesta.delete()
-        return redirect('lista_encuestas')
-    return render(request, 'core/eliminar_encuesta.html', {
-        'encuesta': encuesta
-    })
-
-@login_required
-@group_required('Auditor')
-def mis_asignaciones(request):
-    from django.db.models import Q
-    grupos = request.user.groups.values_list('pk', flat=True)
-    encuestas = Encuesta.objects.filter(
-        Q(assigned_users=request.user) |
-        Q(assigned_groups__in=grupos)
-    ).distinct()
-    return render(request, 'core/mis_asignaciones.html', {
-        'encuestas': encuestas
-    })
-
-# …tus vistas de Quiz y Resultado siguen igual…
+def informe_gracias(request):
+    """
+    Página sencilla de agradecimiento tras enviar el informe.
+    """
+    return render(request, 'core/informe_gracias.html')
