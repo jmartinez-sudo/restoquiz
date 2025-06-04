@@ -1,84 +1,69 @@
-# core/management/commands/importar_informe_visita.py
+# core/management/commands/importar_visita.py
 
-import csv
-import os
-from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
-from core.models import Categoria, Pregunta
+import re
+import pandas as pd
+from django.core.management.base import BaseCommand
+from core.models import Categoria, Pregunta  # Ajusta a tus modelos reales
 
 class Command(BaseCommand):
-    help = (
-        "Importa la encuesta 'Informe de Visita' desde un CSV "
-        "y crea Categorías y Preguntas en la BD."
-    )
+    help = "Importa categorías y preguntas desde el Excel de Informe de Visita"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--csv',
-            dest='csv_path',
-            help='Ruta al archivo CSV, relativo a la base del proyecto. '
-                 'Ejemplo: data/encuesta_informe_visita.csv'
+            "--ruta",
+            type=str,
+            help="Ruta al archivo Excel (con el nombre y extensión)",
+            default="INFORME DE VISITA  MODIFICADO (002).xlsx"
+        )
+        parser.add_argument(
+            "--hoja",
+            type=str,
+            help="Nombre de la hoja en el Excel",
+            default="Informe de visita"
         )
 
     def handle(self, *args, **options):
-        csv_path = options.get('csv_path')
-        if not csv_path:
-            raise CommandError("Debes indicar la ruta al CSV usando --csv <ruta>")
+        ruta_excel = options["ruta"]
+        hoja = options["hoja"]
 
-        # Construimos la ruta absoluta
-        full_path = os.path.join(settings.BASE_DIR, csv_path)
-        if not os.path.exists(full_path):
-            raise CommandError(f"El archivo no existe en {full_path}")
+        # 1) Leemos TODO el contenido sin asumir encabezados en pandas:
+        df = pd.read_excel(ruta_excel, sheet_name=hoja, header=None)
 
-        created_cats = 0
-        created_qs = 0
+        categoria_actual = None
+        total_categ = 0
+        total_preg = 0
 
-        with open(full_path, newline='', encoding='utf-8') as csvfile:
-            lector = csv.DictReader(csvfile)
-            for fila in lector:
-                orden = fila.get('orden', '').strip()
-                nombre_cat = fila.get('categoria', '').strip()
-                texto_pregunta = fila.get('pregunta', '').strip()
+        # 2) Iteramos cada fila para detectar categorías y preguntas
+        for idx, fila in df.iterrows():
+            celda_col1 = str(fila[1]) if not pd.isna(fila[1]) else ""
+            celda_col2 = str(fila[2]) if not pd.isna(fila[2]) else ""
 
-                if not nombre_cat or not texto_pregunta:
-                    self.stdout.write(self.style.WARNING(
-                        f"  • Fila incompleta, se salta: {fila}"
-                    ))
-                    continue
+            # 2.1) Si coincide con patrón de categoría (ej: "1.- CONTROL DOCUMENTAL")
+            if re.match(r"^\d+\.\-\s*", celda_col1):
+                # Extraemos solo el nombre de la categoría
+                nombre_cat = re.sub(r"^\d+\.\-\s*", "", celda_col1).strip()
+                if nombre_cat:
+                    categoria_actual, creado = Categoria.objects.get_or_create(
+                        nombre=nombre_cat
+                    )
+                    total_categ += 1
 
-                # 1. Obtener o crear la categoría
-                cat_obj, cat_created = Categoria.objects.get_or_create(
-                    nombre=nombre_cat
-                )
-                if cat_created:
-                    created_cats += 1
-                    self.stdout.write(self.style.SUCCESS(
-                        f"  ➤ Creada categoría: '{nombre_cat}'"
-                    ))
+            # 2.2) Si coincide con patrón de pregunta (ej: "1.1", "2.3", "4.10", etc.)
+            elif re.match(r"^\d+\.\d+", celda_col1):
+                texto_preg = celda_col2.strip()
+                # Nos aseguramos de tener una categoría padre ya creada
+                if categoria_actual and texto_preg:
+                    Pregunta.objects.create(
+                        categoria=categoria_actual,
+                        texto=texto_preg
+                        # Si tu modelo de Pregunta tiene más campos (peso, tipo, etc.), agrégalos acá.
+                    )
+                    total_preg += 1
 
-                # 2. Si ya existe esa pregunta con el mismo orden, no duplicar
-                existe_preg = Pregunta.objects.filter(
-                    categoria=cat_obj,
-                    orden=orden
-                ).exists()
-                if existe_preg:
-                    self.stdout.write(self.style.NOTICE(
-                        f"  • Pregunta con orden {orden} ya existe en '{nombre_cat}'"
-                    ))
-                    continue
+            # 2.3) Si no coincide con ninguno, lo ignoramos (otros bloques como "TOTAL", "OBSERVACIONES", etc.)
 
-                # 3. Crear la pregunta nueva
-                nueva_preg = Pregunta.objects.create(
-                    categoria=cat_obj,
-                    texto=texto_pregunta,
-                    orden=orden
-                )
-                created_qs += 1
-                self.stdout.write(self.style.SUCCESS(
-                    f"  ➤ Creada pregunta [{orden}] en '{nombre_cat}': {texto_pregunta[:50]}..."
-                ))
-
-        self.stdout.write(self.style.SUCCESS(
-            f"\n✅ Import terminado: {created_cats} categoría(s) creadas, "
-            f"{created_qs} pregunta(s) creadas."
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Fin de importación: {total_categ} categorías y {total_preg} preguntas agregadas."
+            )
+        )
